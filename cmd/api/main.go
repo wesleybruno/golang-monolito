@@ -1,11 +1,17 @@
 package main
 
-import "log"
+import (
+	"log"
+
+	"github.com/wesleybruno/golang-monolito/internal/env"
+)
 
 func main() {
 
+	env.LoadConfig()
+
 	cfg := config{
-		addr: ":8000",
+		addr: env.Config.ApiPort,
 	}
 
 	app := &application{

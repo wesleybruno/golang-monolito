@@ -3,7 +3,14 @@ package env
 import "github.com/spf13/viper"
 
 type Enviroment struct {
-	ApiPort string `mapstructure:"PORT"`
+	ApiPort      string `mapstructure:"PORT"`
+	DbAddress    string `mapstructure:"DB_ADDRESS"`
+	DbUser       string `mapstructure:"DB_USER"`
+	DbPassword   string `mapstructure:"DB_PASSWORD"`
+	DbName       string `mapstructure:"DB_NAME"`
+	MaxOpenConns int    `mapstructure:"DB_MAX_OPEN_CONNS"`
+	MaxIdleConns int    `mapstructure:"DB_MAX_IDLE_CONNS"`
+	MaxIdleTime  string `mapstructure:"DB_MAX_IDLE_TIME"`
 }
 
 var Config Enviroment

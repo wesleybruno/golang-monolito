@@ -2,7 +2,7 @@ include .env
 MIGRATIONS_PATH = ./cmd/migrate/migrations
 DB_ADDR = "postgres://$(DB_USER):$(DB_PASSWORD)@localhost/$(DB_NAME)?sslmode=disable"
 
-.PHONY: go
+.PHONY: run
 run: 
 	@go run cmd/api/*.go
 
@@ -10,12 +10,12 @@ run:
 air: 
 	@air -c .air.toml
 
-.PHONY: git
+.PHONY: push
 push: 
 	@git push
 
-.PHONY: migrate-create
-migration:
+.PHONY: migrate
+migrate:
 	@migrate create -seq -ext sql -dir $(MIGRATIONS_PATH) $(filter-out $@,$(MAKECMDGOALS))
 
 .PHONY: migrate-up
@@ -26,4 +26,6 @@ migrate-up:
 migrate-down:
 	@migrate -path=$(MIGRATIONS_PATH) -database=$(DB_ADDR) down
 
-
+.PHONY: seed
+seed:
+	@go run cmd/migrate/seed/main.go

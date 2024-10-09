@@ -11,6 +11,7 @@ type Enviroment struct {
 	MaxOpenConns int    `mapstructure:"DB_MAX_OPEN_CONNS"`
 	MaxIdleConns int    `mapstructure:"DB_MAX_IDLE_CONNS"`
 	MaxIdleTime  string `mapstructure:"DB_MAX_IDLE_TIME"`
+	Env          string `mapstructure:"ENV"`
 }
 
 var Config Enviroment

@@ -9,12 +9,15 @@ import (
 	"github.com/wesleybruno/golang-monolito/internal/store"
 )
 
+const version = "0.0.1"
+
 func main() {
 
 	env.LoadConfig()
 
 	cfg := config{
 		addr: env.Config.ApiPort,
+		env:  env.Config.Env,
 		dbConfig: dbConfig{
 			addr:         fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=disable", env.Config.DbUser, env.Config.DbPassword, env.Config.DbAddress, env.Config.DbName),
 			maxOpenConns: env.Config.MaxOpenConns,

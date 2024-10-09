@@ -1,0 +1,30 @@
+GET http://localhost:3000/v1/health HTTP/1.1
+content-type: application/json
+
+###
+POST http://localhost:3000/v1/post HTTP/1.1
+content-type: application/json
+
+{
+    "title": "title",
+    "content": "content",
+    "tags": ["tag1", "tag2"]
+}
+
+###
+GET http://localhost:3000/v1/post/4 HTTP/1.1
+content-type: application/json
+
+###
+DELETE http://localhost:3000/v1/post/3 HTTP/1.1
+content-type: application/json
+
+
+###
+PATCH http://localhost:3000/v1/post/4 HTTP/1.1
+content-type: application/json
+
+{
+    "title": "title-updated",
+    "content": "content-updated"
+}

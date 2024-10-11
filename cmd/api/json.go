@@ -49,3 +49,8 @@ func (app *application) jsonResponse(w http.ResponseWriter, status int, data any
 
 	return writeJson(w, status, &envelope{Data: data})
 }
+
+func (app *application) jsonResponseNoData(w http.ResponseWriter, status int) error {
+	w.WriteHeader(status)
+	return nil
+}

@@ -21,6 +21,14 @@ func (app *application) badRequestError(w http.ResponseWriter, r *http.Request, 
 
 }
 
+func (app *application) conflictError(w http.ResponseWriter, r *http.Request, err error) {
+
+	log.Printf("conflict error: %s path: %s error: %s", r.Method, r.URL.Path, err)
+
+	writeJsonError(w, http.StatusConflict, err.Error())
+
+}
+
 func (app *application) noContent(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("bad request error: %s path: %s ", r.Method, r.URL.Path)

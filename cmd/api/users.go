@@ -12,13 +12,60 @@ import (
 
 type userKey string
 
-const userCtx postKey = "user"
+const userCtx userKey = "user"
 
 func (app *application) getUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	user := getUserFromCtx(r)
 
 	if err := app.jsonResponse(w, http.StatusOK, user); err != nil {
+		app.internalServerError(w, r, err)
+		return
+	}
+
+}
+
+func (app *application) followUserHandler(w http.ResponseWriter, r *http.Request) {
+
+	//TODO(auth): replace with auth
+	myId := int64(1)
+
+	user := getUserFromCtx(r)
+
+	err := app.store.Follower.Follow(r.Context(), myId, user.ID)
+	if err != nil {
+
+		switch err {
+		case store.ErrDuplicateKey:
+			app.conflictError(w, r, err)
+		default:
+			app.internalServerError(w, r, err)
+			return
+		}
+
+	}
+
+	if err := app.jsonResponseNoData(w, http.StatusCreated); err != nil {
+		app.internalServerError(w, r, err)
+		return
+	}
+
+}
+
+func (app *application) unfollowUserHandler(w http.ResponseWriter, r *http.Request) {
+
+	//TODO(auth): replace with auth
+	myId := int64(1)
+
+	user := getUserFromCtx(r)
+
+	err := app.store.Follower.Unfollow(r.Context(), myId, user.ID)
+	if err != nil {
+		app.internalServerError(w, r, err)
+		return
+	}
+
+	if err := app.jsonResponseNoData(w, http.StatusCreated); err != nil {
 		app.internalServerError(w, r, err)
 		return
 	}

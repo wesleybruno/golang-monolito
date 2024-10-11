@@ -29,7 +29,20 @@ content-type: application/json
     "content": "content-updated"
 }
 
-
 ###
 GET http://localhost:3000/v1/user/1 HTTP/1.1
 content-type: application/json
+
+###
+PUT http://localhost:3000/v1/user/2/follow HTTP/1.1
+content-type: application/json
+
+###
+PUT http://localhost:3000/v1/user/2/unfollow HTTP/1.1
+content-type: application/json
+
+###
+GET http://localhost:3000/v1/user/feed HTTP/1.1
+content-type: application/json
+
+###

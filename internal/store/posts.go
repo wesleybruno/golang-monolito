@@ -95,6 +95,12 @@ func (p PostStore) GetByID(ctx context.Context, id int64) (*Post, error) {
 }
 
 func (p PostStore) GetUserFeed(ctx context.Context, id int64, pagination PaginationFeedQuery) ([]*PostWithMetadata, error) {
+
+	whereTags := ""
+	if len(pagination.Tags) > 0 {
+		whereTags = "and (p.tags @> $5)"
+	}
+
 	query := `
 	SELECT 
 			p.id, p.user_id, p.title, p.content, p.created_at, p.version, p.tags,
@@ -105,9 +111,10 @@ func (p PostStore) GetUserFeed(ctx context.Context, id int64, pagination Paginat
 		LEFT JOIN users u ON p.user_id = u.id
 		JOIN followers f ON f.follower_id = p.user_id OR p.user_id = $1
 		WHERE 
-			f.user_id = $1 AND
-			(p.title ILIKE '%' || $4 || '%' OR p.content ILIKE '%' || $4 || '%') AND
-			(p.tags @> $5::varchar[] OR $5::varchar[] = '{}')
+			1=1
+			AND f.user_id = $1 
+			AND (p.title ILIKE '%' || $4 || '%' OR p.content ILIKE '%' || $4 || '%')
+			` + whereTags + `
 		GROUP BY p.id, u.username
 		ORDER BY p.created_at ` + pagination.Sort + `
 		LIMIT $2 OFFSET $3
@@ -116,7 +123,17 @@ func (p PostStore) GetUserFeed(ctx context.Context, id int64, pagination Paginat
 	ctxWTimeout, cancel := context.WithTimeout(ctx, TimeOutTime)
 	defer cancel()
 
-	rows, err := p.db.QueryContext(ctxWTimeout, query, id, pagination.Limit, pagination.Offset, pagination.Search, pq.Array(pagination.Tags))
+	arr := pq.Array(pagination.Tags)
+	var rows *sql.Rows
+	var err error
+
+	if len(pagination.Tags) > 0 {
+		rows, err = p.db.QueryContext(ctxWTimeout, query, id, pagination.Limit, pagination.Offset, pagination.Search, arr)
+	} else {
+		rows, err = p.db.QueryContext(ctxWTimeout, query, id, pagination.Limit, pagination.Offset, pagination.Search)
+
+	}
+
 	if err != nil {
 		return nil, err
 	}

@@ -9,7 +9,7 @@ import (
 func (app *application) getUserFeedHandler(w http.ResponseWriter, r *http.Request) {
 
 	//TODO(refact): get id from auth
-	myId := int64(8)
+	myId := int64(1)
 
 	fq := store.PaginationFeedQuery{
 		Limit:  20,

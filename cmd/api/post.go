@@ -39,12 +39,12 @@ func (app *application) createPostHandler(w http.ResponseWriter, r *http.Request
 	var payload CreatePostPayload
 
 	if err := readJson(w, r, &payload); err != nil {
-		app.badRequestError(w, r, err)
+		app.badRequestResponse(w, r, err)
 		return
 	}
 
 	if err := Validate.Struct(payload); err != nil {
-		app.badRequestError(w, r, err)
+		app.badRequestResponse(w, r, err)
 		return
 	}
 
@@ -168,12 +168,12 @@ func (app *application) updatePostHandler(w http.ResponseWriter, r *http.Request
 
 	var payload UpdatePostPayload
 	if err := readJson(w, r, &payload); err != nil {
-		app.badRequestError(w, r, err)
+		app.badRequestResponse(w, r, err)
 		return
 	}
 
 	if err := Validate.Struct(payload); err != nil {
-		app.badRequestError(w, r, err)
+		app.badRequestResponse(w, r, err)
 		return
 	}
 
@@ -190,7 +190,7 @@ func (app *application) updatePostHandler(w http.ResponseWriter, r *http.Request
 	if err != nil {
 		switch {
 		case errors.Is(err, store.ErrNotFound):
-			app.noContent(w, r)
+			app.notFoundResponse(w, r, err)
 		default:
 			app.internalServerError(w, r, err)
 		}

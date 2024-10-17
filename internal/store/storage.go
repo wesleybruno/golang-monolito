@@ -8,9 +8,11 @@ import (
 )
 
 var (
-	ErrNotFound     = errors.New("resource not found")
-	ErrDuplicateKey = errors.New("duplicate key value violates unique constraint")
-	TimeOutTime     = time.Second * 5
+	ErrNotFound          = errors.New("resource not found")
+	ErrDuplicateKey      = errors.New("duplicate key value violates unique constraint")
+	TimeOutTime          = time.Second * 5
+	ErrDuplicateEmail    = errors.New("email already exists")
+	ErrDuplicateUsername = errors.New("username already exists")
 )
 
 type Storage struct {
@@ -22,8 +24,10 @@ type Storage struct {
 		GetUserFeed(context.Context, int64, PaginationFeedQuery) ([]*PostWithMetadata, error)
 	}
 	Users interface {
-		Create(context.Context, *User) error
+		Create(context.Context, *sql.Tx, *User) error
 		GetById(ctx context.Context, id int64) (*User, error)
+		CreateAndInvite(context.Context, *User, string, time.Duration) error
+		Activate(context.Context, string) error
 	}
 	Comments interface {
 		GetByPostId(ctx context.Context, postId int64) ([]Comment, error)
@@ -42,4 +46,18 @@ func NewStorage(db *sql.DB) Storage {
 		Comments: &CommentStore{db},
 		Follower: &FollowerStore{db},
 	}
+}
+
+func withTx(db *sql.DB, ctx context.Context, fn func(*sql.Tx) error) error {
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+	if err := fn(tx); err != nil {
+		_ = tx.Rollback()
+		return err
+	}
+
+	return tx.Commit()
 }

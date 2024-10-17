@@ -27,7 +27,7 @@ const userCtx userKey = "user"
 //	@Failure		404	{object}	error
 //	@Failure		500	{object}	error
 //	@Security		ApiKeyAuth
-//	@Router			/users/{id} [get]
+//	@Router			/user/{id} [get]
 func (app *application) getUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	user := getUserFromCtx(r)
@@ -51,7 +51,7 @@ func (app *application) getUserHandler(w http.ResponseWriter, r *http.Request) {
 //	@Failure		400		{object}	error	"User payload missing"
 //	@Failure		404		{object}	error	"User not found"
 //	@Security		ApiKeyAuth
-//	@Router			/users/{userID}/follow [put]
+//	@Router			/user/{userID}/follow [put]
 func (app *application) followUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	//TODO(auth): replace with auth
@@ -64,7 +64,7 @@ func (app *application) followUserHandler(w http.ResponseWriter, r *http.Request
 
 		switch err {
 		case store.ErrDuplicateKey:
-			app.conflictError(w, r, err)
+			app.conflictResponse(w, r, err)
 		default:
 			app.internalServerError(w, r, err)
 			return
@@ -91,7 +91,7 @@ func (app *application) followUserHandler(w http.ResponseWriter, r *http.Request
 //	@Failure		400		{object}	error	"User payload missing"
 //	@Failure		404		{object}	error	"User not found"
 //	@Security		ApiKeyAuth
-//	@Router			/users/{userID}/unfollow [put]
+//	@Router			/user/{userID}/unfollow [put]
 func (app *application) unfollowUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	//TODO(auth): replace with auth

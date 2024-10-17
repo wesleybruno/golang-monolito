@@ -49,3 +49,12 @@ content-type: application/json
 GET http://localhost:3000/v1/user/feed?limit=10&offset=0 HTTP/1.1
 content-type: application/json
 
+###
+POST http://localhost:3000/v1/auth/user HTTP/1.1
+content-type: application/json
+
+{
+  "email": "teste@mail.com",
+  "password": "123456",
+  "username": "username"
+}

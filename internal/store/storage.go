@@ -28,6 +28,7 @@ type Storage struct {
 		GetById(ctx context.Context, id int64) (*User, error)
 		CreateAndInvite(context.Context, *User, string, time.Duration) error
 		Activate(context.Context, string) error
+		Delete(ctx context.Context, id int64) error
 	}
 	Comments interface {
 		GetByPostId(ctx context.Context, postId int64) ([]Comment, error)

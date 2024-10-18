@@ -6,6 +6,7 @@ import (
 
 	"github.com/wesleybruno/golang-monolito/internal/db"
 	"github.com/wesleybruno/golang-monolito/internal/env"
+	"github.com/wesleybruno/golang-monolito/internal/mailer"
 	"github.com/wesleybruno/golang-monolito/internal/store"
 	"go.uber.org/zap"
 )
@@ -34,11 +35,16 @@ func main() {
 	env.LoadConfig()
 
 	cfg := config{
-		addr:   env.Config.ApiPort,
-		env:    env.Config.Env,
-		apiUrl: env.Config.ApiUrl,
+		addr:        env.Config.ApiPort,
+		env:         env.Config.Env,
+		apiUrl:      env.Config.ApiUrl,
+		frontendURL: env.Config.FrontendURL,
 		mail: mail{
 			exp: time.Hour * 24 * 3, // 3 days
+			sendgrid: sendgrid{
+				apiKey:    env.Config.SendGridApiKey,
+				fromEmail: env.Config.FromEmail,
+			},
 		},
 		dbConfig: dbConfig{
 			addr:         fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=disable", env.Config.DbUser, env.Config.DbPassword, env.Config.DbAddress, env.Config.DbName),
@@ -61,10 +67,13 @@ func main() {
 
 	store := store.NewStorage(db)
 
+	mailer := mailer.NewSendGrid(cfg.mail.sendgrid.apiKey, cfg.mail.sendgrid.fromEmail)
+
 	app := &application{
 		config: cfg,
 		store:  store,
 		logger: logger,
+		mailer: mailer,
 	}
 
 	mux := app.mount()

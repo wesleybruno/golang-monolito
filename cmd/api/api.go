@@ -11,6 +11,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/wesleybruno/golang-monolito/docs"
+	"github.com/wesleybruno/golang-monolito/internal/mailer"
 	"github.com/wesleybruno/golang-monolito/internal/store"
 )
 
@@ -18,18 +19,26 @@ type application struct {
 	config config
 	store  store.Storage
 	logger *zap.SugaredLogger
+	mailer mailer.Client
 }
 
 type config struct {
-	dbConfig dbConfig
-	addr     string
-	env      string
-	apiUrl   string
-	mail     mail
+	dbConfig    dbConfig
+	addr        string
+	env         string
+	apiUrl      string
+	frontendURL string
+	mail        mail
 }
 
 type mail struct {
-	exp time.Duration
+	exp      time.Duration
+	sendgrid sendgrid
+}
+
+type sendgrid struct {
+	apiKey    string
+	fromEmail string
 }
 
 type dbConfig struct {

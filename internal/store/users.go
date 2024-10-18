@@ -40,7 +40,7 @@ type UserStore struct {
 	db *sql.DB
 }
 
-func (p *UserStore) Create(ctx context.Context, tx *sql.Tx, user *User) error {
+func (s *UserStore) Create(ctx context.Context, tx *sql.Tx, user *User) error {
 	query := `INSERT INTO users (username, password, email ) VALUES ($1, $2, $3) RETURNING id, created_at`
 
 	ctxWTimeout, cancel := context.WithTimeout(ctx, TimeOutTime)
@@ -63,7 +63,7 @@ func (p *UserStore) Create(ctx context.Context, tx *sql.Tx, user *User) error {
 	return nil
 }
 
-func (p *UserStore) GetById(ctx context.Context, id int64) (*User, error) {
+func (s *UserStore) GetById(ctx context.Context, id int64) (*User, error) {
 	query := `SELECT id, username, email, created_at
 		FROM users
 		WHERE id = $1`
@@ -73,7 +73,7 @@ func (p *UserStore) GetById(ctx context.Context, id int64) (*User, error) {
 
 	var user User
 
-	err := p.db.QueryRowContext(ctxWTimeout, query, id).Scan(&user.ID, &user.Username, &user.Email, &user.CreatedAt)
+	err := s.db.QueryRowContext(ctxWTimeout, query, id).Scan(&user.ID, &user.Username, &user.Email, &user.CreatedAt)
 
 	if err != nil {
 		return nil, err
@@ -82,7 +82,7 @@ func (p *UserStore) GetById(ctx context.Context, id int64) (*User, error) {
 	return &user, nil
 }
 
-func (p *UserStore) createUserInvitation(ctx context.Context, tx *sql.Tx, token string, invitationExp time.Duration, userID int64) error {
+func (s *UserStore) createUserInvitation(ctx context.Context, tx *sql.Tx, token string, invitationExp time.Duration, userID int64) error {
 	query := `INSERT INTO user_invitation (token, user_id, expiry ) VALUES ($1, $2, $3)`
 
 	ctxWTimeout, cancel := context.WithTimeout(ctx, TimeOutTime)
@@ -97,14 +97,14 @@ func (p *UserStore) createUserInvitation(ctx context.Context, tx *sql.Tx, token 
 	return nil
 }
 
-func (p *UserStore) CreateAndInvite(ctx context.Context, user *User, token string, invitationExp time.Duration) error {
-	return withTx(p.db, ctx, func(tx *sql.Tx) error {
+func (s *UserStore) CreateAndInvite(ctx context.Context, user *User, token string, invitationExp time.Duration) error {
+	return withTx(s.db, ctx, func(tx *sql.Tx) error {
 
-		if err := p.Create(ctx, tx, user); err != nil {
+		if err := s.Create(ctx, tx, user); err != nil {
 			return err
 		}
 
-		if err := p.createUserInvitation(ctx, tx, token, invitationExp, user.ID); err != nil {
+		if err := s.createUserInvitation(ctx, tx, token, invitationExp, user.ID); err != nil {
 			return err
 		}
 
@@ -114,22 +114,22 @@ func (p *UserStore) CreateAndInvite(ctx context.Context, user *User, token strin
 
 }
 
-func (p *UserStore) Activate(ctx context.Context, token string) error {
-	return withTx(p.db, ctx, func(tx *sql.Tx) error {
+func (s *UserStore) Activate(ctx context.Context, token string) error {
+	return withTx(s.db, ctx, func(tx *sql.Tx) error {
 		// 1. find the user that this token belongs to
-		user, err := p.getUserFromInvitation(ctx, tx, token)
+		user, err := s.getUserFromInvitation(ctx, tx, token)
 		if err != nil {
 			return err
 		}
 
 		// 2. update the user
 		user.IsActive = true
-		if err := p.update(ctx, tx, user); err != nil {
+		if err := s.update(ctx, tx, user); err != nil {
 			return err
 		}
 
 		// 3. clean the invitations
-		if err := p.deleteUserInvitations(ctx, tx, user.ID); err != nil {
+		if err := s.deleteUserInvitations(ctx, tx, user.ID); err != nil {
 			return err
 		}
 
@@ -197,4 +197,34 @@ func (s *UserStore) deleteUserInvitations(ctx context.Context, tx *sql.Tx, userI
 	}
 
 	return nil
+}
+
+func (s *UserStore) delete(ctx context.Context, tx *sql.Tx, id int64) error {
+	query := `DELETE FROM users WHERE id = $1`
+
+	ctx, cancel := context.WithTimeout(ctx, TimeOutTime)
+	defer cancel()
+
+	_, err := tx.ExecContext(ctx, query, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *UserStore) Delete(ctx context.Context, id int64) error {
+	return withTx(s.db, ctx, func(tx *sql.Tx) error {
+
+		if err := s.delete(ctx, tx, id); err != nil {
+			return err
+		}
+
+		if err := s.deleteUserInvitations(ctx, tx, id); err != nil {
+			return err
+		}
+
+		return nil
+
+	})
 }

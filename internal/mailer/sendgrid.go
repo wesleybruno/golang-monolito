@@ -30,6 +30,10 @@ func NewSendGrid(apiKey, fromEmail string) *SendGridMailer {
 
 func (m SendGridMailer) Send(templateFile, username, email string, data any, isSandbox bool) (int, error) {
 
+	if isSandbox {
+		return 0, nil
+	}
+
 	from := mail.NewEmail(FromName, m.fromEmail)
 	to := mail.NewEmail(username, email)
 

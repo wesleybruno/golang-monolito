@@ -16,6 +16,9 @@ type Enviroment struct {
 	SendGridApiKey string `mapstructure:"SENDGRID_API_KEY"`
 	FromEmail      string `mapstructure:"FROM_EMAIL"`
 	FrontendURL    string `mapstructure:"FRONTEND_URL"`
+	AuthBasicUser  string `mapstructure:"AUTH_BASIC_USER"`
+	AuthBasicPass  string `mapstructure:"AUTH_BASIC_PASS"`
+	JwtSecret      string `mapstructure:"JWT_SECRET"`
 }
 
 var Config Enviroment

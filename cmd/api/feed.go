@@ -24,7 +24,7 @@ import (
 //	@Failure		400		{object}	error
 //	@Failure		500		{object}	error
 //	@Security		ApiKeyAuth
-//	@Router			/users/feed [get]
+//	@Router			/user/feed [get]
 func (app *application) getUserFeedHandler(w http.ResponseWriter, r *http.Request) {
 
 	//TODO(refact): get id from auth

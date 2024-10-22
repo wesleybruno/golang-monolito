@@ -54,7 +54,22 @@ POST http://localhost:3000/v1/auth/user HTTP/1.1
 content-type: application/json
 
 {
-  "email": "teste@mail.com",
+  "email": "testesenha2@mail.com",
   "password": "123456",
-  "username": "username"
+  "username": "usernamesenha2"
+}
+
+###
+@token=
+# @name activate_user
+PUT http://localhost:3000/v1/user/activate/{{token}} HTTP/1.1
+
+###
+# @name login
+POST http://localhost:3000/v1/auth/token HTTP/1.1
+content-type: application/json
+
+{
+  "email": "testesenha2@mail.com",
+  "password": "123456"
 }

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/wesleybruno/golang-monolito/internal/auth"
 	"github.com/wesleybruno/golang-monolito/internal/db"
 	"github.com/wesleybruno/golang-monolito/internal/env"
 	"github.com/wesleybruno/golang-monolito/internal/mailer"
@@ -52,6 +53,17 @@ func main() {
 			maxIdleConns: env.Config.MaxIdleConns,
 			maxIdleTime:  env.Config.MaxIdleTime,
 		},
+		auth: authConfig{
+			basic: basicConfig{
+				user: env.Config.AuthBasicUser,
+				pass: env.Config.AuthBasicPass,
+			},
+			token: tokenConfig{
+				secret: env.Config.JwtSecret,
+				exp:    time.Hour * 24 * 3, // 3 days
+				iss:    "goapi",
+			},
+		},
 	}
 
 	logger := zap.Must(zap.NewProduction()).Sugar()
@@ -69,11 +81,14 @@ func main() {
 
 	mailer := mailer.NewSendGrid(cfg.mail.sendgrid.apiKey, cfg.mail.sendgrid.fromEmail)
 
+	jwtAuthenticator := auth.NewJwtAuthenticator(cfg.auth.token.secret, cfg.auth.token.iss, cfg.auth.token.iss)
+
 	app := &application{
 		config: cfg,
 		store:  store,
 		logger: logger,
 		mailer: mailer,
+		auth:   jwtAuthenticator,
 	}
 
 	mux := app.mount()

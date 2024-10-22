@@ -11,6 +11,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/wesleybruno/golang-monolito/docs"
+	"github.com/wesleybruno/golang-monolito/internal/auth"
 	"github.com/wesleybruno/golang-monolito/internal/mailer"
 	"github.com/wesleybruno/golang-monolito/internal/store"
 )
@@ -20,6 +21,7 @@ type application struct {
 	store  store.Storage
 	logger *zap.SugaredLogger
 	mailer mailer.Client
+	auth   auth.Authenticator
 }
 
 type config struct {
@@ -29,6 +31,23 @@ type config struct {
 	apiUrl      string
 	frontendURL string
 	mail        mail
+	auth        authConfig
+}
+
+type authConfig struct {
+	basic basicConfig
+	token tokenConfig
+}
+
+type tokenConfig struct {
+	secret string
+	exp    time.Duration
+	iss    string
+}
+
+type basicConfig struct {
+	user string
+	pass string
 }
 
 type mail struct {
@@ -65,13 +84,15 @@ func (app *application) mount() http.Handler {
 			httpSwagger.URL(docsUrl),
 		))
 
-		r.Get("/health", app.healthCheckerHandler)
+		r.With(app.BasicAuthMiddleware()).Get("/health", app.healthCheckerHandler)
 
 		r.Route("/post", func(r chi.Router) {
+			r.Use(app.AuthTokenMiddleware)
 			r.Post("/", app.createPostHandler)
 
 			r.Route("/{postId}", func(r chi.Router) {
 				r.Use(app.postsContextMiddleware)
+
 				r.Get("/", app.getPostHandler)
 				r.Delete("/", app.deletePostHandler)
 				r.Patch("/", app.updatePostHandler)
@@ -83,7 +104,8 @@ func (app *application) mount() http.Handler {
 			r.Put("/activate/{token}", app.activateUserHandler)
 
 			r.Route("/{userId}", func(r chi.Router) {
-				r.Use(app.userContextMiddleware)
+				r.Use(app.AuthTokenMiddleware)
+
 				r.Get("/", app.getUserHandler)
 
 				r.Put("/follow", app.followUserHandler)
@@ -91,12 +113,14 @@ func (app *application) mount() http.Handler {
 			})
 
 			r.Group(func(r chi.Router) {
+				r.Use(app.AuthTokenMiddleware)
 				r.Get("/feed", app.getUserFeedHandler)
 			})
 
 		})
 		r.Route("/auth", func(r chi.Router) {
 			r.Post("/user", app.registerUserHandler)
+			r.Post("/token", app.createTokenHandler)
 		})
 	})
 

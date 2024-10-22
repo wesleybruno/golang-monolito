@@ -16,8 +16,9 @@ GET http://localhost:3000/v1/post/4 HTTP/1.1
 content-type: application/json
 
 ###
-DELETE http://localhost:3000/v1/post/3 HTTP/1.1
+DELETE http://localhost:3000/v1/post/4 HTTP/1.1
 content-type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJnb2FwaSIsImV4cCI6MTcyOTg4Mjk1MSwiaWF0IjoxNzI5NjIzNzUxLCJpc3MiOiJnb2FwaSIsIm5iZiI6MTcyOTYyMzc1MSwic3ViIjoxMTZ9.tIXjEuCod4ILGOuqyjJuYuwVb4gVak0QjRBR0UykDyY
 
 
 ###

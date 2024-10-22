@@ -65,6 +65,10 @@ definitions:
         type: integer
       is_active:
         type: boolean
+      role:
+        $ref: '#/definitions/store.Role'
+      role_id:
+        type: integer
       token:
         type: string
       username:
@@ -119,6 +123,17 @@ definitions:
       user:
         $ref: '#/definitions/store.User'
     type: object
+  store.Role:
+    properties:
+      description:
+        type: string
+      id:
+        type: integer
+      level:
+        type: integer
+      name:
+        type: string
+    type: object
   store.User:
     properties:
       created_at:
@@ -129,6 +144,10 @@ definitions:
         type: integer
       is_active:
         type: boolean
+      role:
+        $ref: '#/definitions/store.Role'
+      role_id:
+        type: integer
       username:
         type: string
     type: object
@@ -203,7 +222,7 @@ paths:
       summary: Registers a user
       tags:
       - auth
-  /posts:
+  /post:
     post:
       consumes:
       - application/json
@@ -236,7 +255,7 @@ paths:
       summary: Creates a post
       tags:
       - posts
-  /posts/{id}:
+  /post/{id}:
     delete:
       consumes:
       - application/json

@@ -19,6 +19,9 @@ type Enviroment struct {
 	AuthBasicUser  string `mapstructure:"AUTH_BASIC_USER"`
 	AuthBasicPass  string `mapstructure:"AUTH_BASIC_PASS"`
 	JwtSecret      string `mapstructure:"JWT_SECRET"`
+	RedisAddr      string `mapstructure:"REDIS_ADDR"`
+	RedisPwd       string `mapstructure:"REDIS_PWD"`
+	RedisEnabled   bool   `mapstructure:"REDIS_ENABLED"`
 }
 
 var Config Enviroment

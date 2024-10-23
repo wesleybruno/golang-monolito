@@ -33,3 +33,7 @@ seed:
 .PHONY: docs
 docs:
 	@swag init -g ./api/main.go -d cmd,internal && swag fmt 
+
+.PHONY: build
+build:
+	@go build -o /cmd/api/*.go ./cmd/web

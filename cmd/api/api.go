@@ -14,6 +14,7 @@ import (
 	"github.com/wesleybruno/golang-monolito/internal/auth"
 	"github.com/wesleybruno/golang-monolito/internal/mailer"
 	"github.com/wesleybruno/golang-monolito/internal/store"
+	"github.com/wesleybruno/golang-monolito/internal/store/cache"
 )
 
 type application struct {
@@ -22,6 +23,7 @@ type application struct {
 	logger *zap.SugaredLogger
 	mailer mailer.Client
 	auth   auth.Authenticator
+	cache  cache.Storage
 }
 
 type config struct {
@@ -32,11 +34,19 @@ type config struct {
 	frontendURL string
 	mail        mail
 	auth        authConfig
+	cache       redisCfg
 }
 
 type authConfig struct {
 	basic basicConfig
 	token tokenConfig
+}
+
+type redisCfg struct {
+	addr    string
+	pwd     string
+	db      int
+	enabled bool
 }
 
 type tokenConfig struct {

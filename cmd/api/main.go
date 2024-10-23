@@ -4,11 +4,13 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/redis/go-redis/v9"
 	"github.com/wesleybruno/golang-monolito/internal/auth"
 	"github.com/wesleybruno/golang-monolito/internal/db"
 	"github.com/wesleybruno/golang-monolito/internal/env"
 	"github.com/wesleybruno/golang-monolito/internal/mailer"
 	"github.com/wesleybruno/golang-monolito/internal/store"
+	"github.com/wesleybruno/golang-monolito/internal/store/cache"
 	"go.uber.org/zap"
 )
 
@@ -53,6 +55,12 @@ func main() {
 			maxIdleConns: env.Config.MaxIdleConns,
 			maxIdleTime:  env.Config.MaxIdleTime,
 		},
+		cache: redisCfg{
+			addr:    env.Config.RedisAddr,
+			pwd:     env.Config.RedisPwd,
+			db:      0,
+			enabled: true,
+		},
 		auth: authConfig{
 			basic: basicConfig{
 				user: env.Config.AuthBasicUser,
@@ -77,7 +85,15 @@ func main() {
 	defer db.Close()
 	logger.Info("database connection pool established")
 
+	var rdb *redis.Client
+	if cfg.cache.enabled {
+		rdb = cache.NewRedisClient(cfg.cache.addr, cfg.cache.pwd, cfg.cache.db)
+		logger.Info("redis database connection established")
+	}
+
 	store := store.NewStorage(db)
+
+	cacheStore := cache.NewRedisStorage(rdb)
 
 	mailer := mailer.NewSendGrid(cfg.mail.sendgrid.apiKey, cfg.mail.sendgrid.fromEmail)
 
@@ -86,6 +102,7 @@ func main() {
 	app := &application{
 		config: cfg,
 		store:  store,
+		cache:  cacheStore,
 		logger: logger,
 		mailer: mailer,
 		auth:   jwtAuthenticator,

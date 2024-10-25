@@ -24,6 +24,7 @@ type Enviroment struct {
 	RedisEnabled            bool   `mapstructure:"REDIS_ENABLED"`
 	RateLimiterRequestCount int    `mapstructure:"RATE_LIMITER_REQUEST_COUNT"`
 	RateLimiterEnabled      bool   `mapstructure:"RATE_LIMITER_ENABLED"`
+	CorsAllowedOrigin       string `mapstructure:"CORS_ALLOWED_ORIGIN"`
 }
 
 var Config Enviroment

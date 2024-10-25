@@ -9,6 +9,7 @@ import (
 	"github.com/wesleybruno/golang-monolito/internal/db"
 	"github.com/wesleybruno/golang-monolito/internal/env"
 	"github.com/wesleybruno/golang-monolito/internal/mailer"
+	"github.com/wesleybruno/golang-monolito/internal/ratelimiter"
 	"github.com/wesleybruno/golang-monolito/internal/store"
 	"github.com/wesleybruno/golang-monolito/internal/store/cache"
 	"go.uber.org/zap"
@@ -59,7 +60,7 @@ func main() {
 			addr:    env.Config.RedisAddr,
 			pwd:     env.Config.RedisPwd,
 			db:      0,
-			enabled: true,
+			enabled: env.Config.RedisEnabled,
 		},
 		auth: authConfig{
 			basic: basicConfig{
@@ -71,6 +72,11 @@ func main() {
 				exp:    time.Hour * 24 * 3, // 3 days
 				iss:    "goapi",
 			},
+		},
+		rateLimiter: ratelimiter.Config{
+			RequestPerTimeFrame: env.Config.RateLimiterRequestCount,
+			TimeFrame:           time.Second * 30,
+			Enabled:             env.Config.RateLimiterEnabled,
 		},
 	}
 
@@ -99,13 +105,19 @@ func main() {
 
 	jwtAuthenticator := auth.NewJwtAuthenticator(cfg.auth.token.secret, cfg.auth.token.iss, cfg.auth.token.iss)
 
+	rateLimiter := ratelimiter.NewFixedWindowLimiter(
+		cfg.rateLimiter.RequestPerTimeFrame,
+		cfg.rateLimiter.TimeFrame,
+	)
+
 	app := &application{
-		config: cfg,
-		store:  store,
-		cache:  cacheStore,
-		logger: logger,
-		mailer: mailer,
-		auth:   jwtAuthenticator,
+		config:      cfg,
+		store:       store,
+		cache:       cacheStore,
+		logger:      logger,
+		mailer:      mailer,
+		auth:        jwtAuthenticator,
+		rateLimiter: rateLimiter,
 	}
 
 	mux := app.mount()

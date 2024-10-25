@@ -18,17 +18,19 @@ import (
 	"github.com/wesleybruno/golang-monolito/docs"
 	"github.com/wesleybruno/golang-monolito/internal/auth"
 	"github.com/wesleybruno/golang-monolito/internal/mailer"
+	"github.com/wesleybruno/golang-monolito/internal/ratelimiter"
 	"github.com/wesleybruno/golang-monolito/internal/store"
 	"github.com/wesleybruno/golang-monolito/internal/store/cache"
 )
 
 type application struct {
-	config config
-	store  store.Storage
-	logger *zap.SugaredLogger
-	mailer mailer.Client
-	auth   auth.Authenticator
-	cache  cache.Storage
+	config      config
+	store       store.Storage
+	logger      *zap.SugaredLogger
+	mailer      mailer.Client
+	auth        auth.Authenticator
+	cache       cache.Storage
+	rateLimiter ratelimiter.Limiter
 }
 
 type config struct {
@@ -40,6 +42,7 @@ type config struct {
 	mail        mail
 	auth        authConfig
 	cache       redisCfg
+	rateLimiter ratelimiter.Config
 }
 
 type authConfig struct {
@@ -89,6 +92,8 @@ func (app *application) mount() http.Handler {
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
+
+	r.Use(app.RateLimiterMiddleware)
 
 	r.Use(middleware.Timeout(60 * time.Second))
 

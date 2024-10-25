@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"expvar"
 	"fmt"
 	"net/http"
 	"os"
@@ -116,6 +117,7 @@ func (app *application) mount() http.Handler {
 		))
 
 		r.With(app.BasicAuthMiddleware()).Get("/health", app.healthCheckerHandler)
+		r.With(app.BasicAuthMiddleware()).Get("/debug/vars", expvar.Handler().ServeHTTP)
 
 		r.Route("/post", func(r chi.Router) {
 			r.Use(app.AuthTokenMiddleware)

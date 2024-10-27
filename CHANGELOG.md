@@ -1,13 +1,13 @@
 
 # Changelog
 
-## 1.1.0 (2024-10-26)
+## [1.1.0] (2024-10-26)
 
 ### Features
 
 * update api version automatically
 
-## 1.0.0 (2024-10-26)
+## [1.0.0] (2024-10-26)
 
 ### Features
 
